@@ -1,35 +1,44 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
+import {
+  ChartIcon,
+  EyeIcon,
+  KnifeIcon,
+  RefreshIcon,
+  ShieldIcon,
+  UserIcon,
+} from "@/components/Icons";
+import { useGame } from "@/context/GameContext";
+import { categories } from "@/data/categories";
+import { useRouter } from "expo-router";
+import React, { useEffect } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
   Easing,
   FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
   ZoomIn,
-} from 'react-native-reanimated';
-import { useRouter } from 'expo-router';
-import { useGame } from '@/context/GameContext';
-import { categories } from '@/data/categories';
-import {
-  ShieldIcon,
-  KnifeIcon,
-  UserIcon,
-  RefreshIcon,
-  ChartIcon,
-} from '@/components/Icons';
+} from "react-native-reanimated";
 
 const PLAYER_COLORS = [
-  '#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6',
-  '#e67e22', '#1abc9c', '#e91e63', '#00bcd4', '#ff5722',
+  "#e74c3c",
+  "#3498db",
+  "#2ecc71",
+  "#f1c40f",
+  "#9b59b6",
+  "#e67e22",
+  "#1abc9c",
+  "#e91e63",
+  "#00bcd4",
+  "#ff5722",
 ];
 
 export default function ResultsScreen() {
   const router = useRouter();
-  const { state, resetGame } = useGame();
-  const crewWins = state.winner === 'crew';
+  const { state, resetForNewGame } = useGame();
+  const crewWins = state.winner === "crew";
 
   const pulseAnim = useSharedValue(1);
 
@@ -37,9 +46,10 @@ export default function ResultsScreen() {
     pulseAnim.value = withRepeat(
       withSequence(
         withTiming(1.08, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) })
+        withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
       ),
-      -1, true
+      -1,
+      true,
     );
   }, []);
 
@@ -52,11 +62,11 @@ export default function ResultsScreen() {
   const maxVotes = Math.max(...sortedPlayers.map((p) => p.votes));
 
   const handlePlayAgain = () => {
-    resetGame();
-    router.replace('/');
+    resetForNewGame();
+    router.replace("/setup");
   };
 
-  const winnerColor = crewWins ? '#2ecc71' : '#e74c3c';
+  const winnerColor = crewWins ? "#2ecc71" : "#e74c3c";
 
   return (
     <ScrollView
@@ -69,12 +79,22 @@ export default function ResultsScreen() {
       <View style={styles.nebula2} />
 
       {/* Resultado principal */}
-      <Animated.View entering={ZoomIn.duration(500)} style={[styles.resultCircle, { borderColor: winnerColor + '30' }]}>
-        <Animated.View style={[styles.resultIconInner, pulseStyle, { backgroundColor: winnerColor + '15' }]}>
-          {crewWins
-            ? <ShieldIcon size={50} color="#2ecc71" />
-            : <KnifeIcon size={50} color="#e74c3c" />
-          }
+      <Animated.View
+        entering={ZoomIn.duration(500)}
+        style={[styles.resultCircle, { borderColor: winnerColor + "30" }]}
+      >
+        <Animated.View
+          style={[
+            styles.resultIconInner,
+            pulseStyle,
+            { backgroundColor: winnerColor + "15" },
+          ]}
+        >
+          {crewWins ? (
+            <ShieldIcon size={50} color="#2ecc71" />
+          ) : (
+            <KnifeIcon size={50} color="#e74c3c" />
+          )}
         </Animated.View>
       </Animated.View>
 
@@ -82,39 +102,69 @@ export default function ResultsScreen() {
         entering={FadeInDown.delay(200).duration(400)}
         style={[styles.resultTitle, { color: winnerColor }]}
       >
-        {crewWins ? '¡TRIPULANTES GANAN!' : '¡EL IMPOSTOR GANA!'}
+        {crewWins ? "¡TRIPULANTES GANAN!" : "¡EL IMPOSTOR GANA!"}
       </Animated.Text>
-      <Animated.Text entering={FadeInDown.delay(300).duration(400)} style={styles.resultSub}>
+      <Animated.Text
+        entering={FadeInDown.delay(300).duration(400)}
+        style={styles.resultSub}
+      >
         {crewWins
-          ? 'Descubrieron al impostor a tiempo'
-          : 'El impostor se salió con la suya'
-        }
+          ? "Descubrieron al impostor a tiempo"
+          : state.impostorGuessedWord
+            ? "¡El impostor adivinó la palabra secreta!"
+            : "El impostor se salió con la suya"}
       </Animated.Text>
 
+      {/* Banner si el impostor adivinó */}
+      {!crewWins && state.impostorGuessedWord && (
+        <Animated.View
+          entering={FadeInDown.delay(350).duration(400)}
+          style={styles.guessBanner}
+        >
+          <View style={styles.guessBannerIcon}>
+            <EyeIcon size={18} color="#e74c3c" />
+          </View>
+          <View style={styles.guessBannerContent}>
+            <Text style={styles.guessBannerTitle}>PALABRA ADIVINADA</Text>
+            <Text style={styles.guessBannerWord}>{state.secretWord}</Text>
+          </View>
+        </Animated.View>
+      )}
+
       {/* Impostor revelado */}
-      <Animated.View entering={FadeInDown.delay(400).duration(400)} style={styles.revealCard}>
+      <Animated.View
+        entering={FadeInDown.delay(400).duration(400)}
+        style={styles.revealCard}
+      >
         <Text style={styles.revealLabel}>EL IMPOSTOR ERA</Text>
         <View style={styles.revealRow}>
           <View style={styles.revealAvatar}>
             <KnifeIcon size={20} color="#e74c3c" />
           </View>
-          <Text style={styles.revealName}>{impostor?.name ?? '???'}</Text>
+          <Text style={styles.revealName}>{impostor?.name ?? "???"}</Text>
         </View>
       </Animated.View>
 
       {/* Palabra secreta */}
-      <Animated.View entering={FadeInDown.delay(500).duration(400)} style={styles.wordCard}>
+      <Animated.View
+        entering={FadeInDown.delay(500).duration(400)}
+        style={styles.wordCard}
+      >
         <Text style={styles.wordLabel}>LA PALABRA SECRETA</Text>
         <Text style={styles.wordValue}>{state.secretWord}</Text>
         <View style={styles.wordCategory}>
           <Text style={styles.wordCategoryText}>
-            {categories[state.categoryIndex].emoji} {categories[state.categoryIndex].name}
+            {categories[state.categoryIndex].emoji}{" "}
+            {categories[state.categoryIndex].name}
           </Text>
         </View>
       </Animated.View>
 
       {/* Tabla de votos */}
-      <Animated.View entering={FadeInDown.delay(600).duration(400)} style={styles.votesSection}>
+      <Animated.View
+        entering={FadeInDown.delay(600).duration(400)}
+        style={styles.votesSection}
+      >
         <View style={styles.votesSectionHeader}>
           <View style={styles.votesIconCircle}>
             <ChartIcon size={16} color="#00ffff" />
@@ -123,7 +173,8 @@ export default function ResultsScreen() {
         </View>
 
         {sortedPlayers.map((player, i) => {
-          const pColor = PLAYER_COLORS[state.players.indexOf(player) % PLAYER_COLORS.length];
+          const pColor =
+            PLAYER_COLORS[state.players.indexOf(player) % PLAYER_COLORS.length];
           const barWidth = maxVotes > 0 ? (player.votes / maxVotes) * 100 : 0;
 
           return (
@@ -132,14 +183,21 @@ export default function ResultsScreen() {
               <Text style={styles.votePos}>{i + 1}</Text>
 
               {/* Avatar */}
-              <View style={[styles.voteAvatar, { backgroundColor: pColor + '20', borderColor: pColor }]}>
+              <View
+                style={[
+                  styles.voteAvatar,
+                  { backgroundColor: pColor + "20", borderColor: pColor },
+                ]}
+              >
                 <UserIcon size={14} color={pColor} />
               </View>
 
               {/* Nombre + barra */}
               <View style={styles.voteInfo}>
                 <View style={styles.voteNameRow}>
-                  <Text style={[styles.voteName, { color: pColor }]}>{player.name}</Text>
+                  <Text style={[styles.voteName, { color: pColor }]}>
+                    {player.name}
+                  </Text>
                   {player.isImpostor && (
                     <View style={styles.impostorTag}>
                       <Text style={styles.impostorTagText}>IMPOSTOR</Text>
@@ -147,22 +205,35 @@ export default function ResultsScreen() {
                   )}
                 </View>
                 <View style={styles.voteBarTrack}>
-                  <View style={[styles.voteBarFill, { width: `${barWidth}%`, backgroundColor: pColor }]} />
+                  <View
+                    style={[
+                      styles.voteBarFill,
+                      { width: `${barWidth}%`, backgroundColor: pColor },
+                    ]}
+                  />
                 </View>
               </View>
 
               {/* Votos */}
-              <Text style={[styles.voteCount, { color: pColor }]}>{player.votes}</Text>
+              <Text style={[styles.voteCount, { color: pColor }]}>
+                {player.votes}
+              </Text>
             </View>
           );
         })}
       </Animated.View>
 
       {/* Botón jugar de nuevo */}
-      <Animated.View entering={FadeInDown.delay(700).duration(400)} style={styles.playAgainSection}>
+      <Animated.View
+        entering={FadeInDown.delay(700).duration(400)}
+        style={styles.playAgainSection}
+      >
         <Pressable
           onPress={handlePlayAgain}
-          style={({ pressed }) => [styles.playAgainBtn, pressed && styles.btnPressed]}
+          style={({ pressed }) => [
+            styles.playAgainBtn,
+            pressed && styles.btnPressed,
+          ]}
         >
           <RefreshIcon size={20} color="#fff" />
           <Text style={styles.playAgainText}>JUGAR DE NUEVO</Text>
@@ -175,10 +246,10 @@ export default function ResultsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#050610',
+    backgroundColor: "#050610",
   },
   content: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 40,
@@ -186,7 +257,7 @@ const styles = StyleSheet.create({
 
   // ── Nebulosas ──
   nebula1: {
-    position: 'absolute',
+    position: "absolute",
     top: -80,
     right: -60,
     width: 280,
@@ -195,13 +266,13 @@ const styles = StyleSheet.create({
     opacity: 0.04,
   },
   nebula2: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -100,
     left: -70,
     width: 300,
     height: 300,
     borderRadius: 150,
-    backgroundColor: '#00ffff',
+    backgroundColor: "#00ffff",
     opacity: 0.025,
   },
 
@@ -211,116 +282,116 @@ const styles = StyleSheet.create({
     height: 110,
     borderRadius: 55,
     borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0b14',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#0a0b14",
     marginBottom: 16,
   },
   resultIconInner: {
     width: 85,
     height: 85,
     borderRadius: 42,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   resultTitle: {
     fontSize: 24,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 3,
-    textAlign: 'center',
+    textAlign: "center",
   },
   resultSub: {
-    color: '#4a5568',
+    color: "#4a5568",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 6,
     marginBottom: 24,
   },
 
   // ── Impostor reveal ──
   revealCard: {
-    width: '100%',
-    backgroundColor: '#0a0b14',
+    width: "100%",
+    backgroundColor: "#0a0b14",
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: '#e74c3c30',
+    borderColor: "#e74c3c30",
     padding: 18,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 12,
   },
   revealLabel: {
-    color: '#e74c3c',
+    color: "#e74c3c",
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 3,
     marginBottom: 10,
   },
   revealRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
   },
   revealAvatar: {
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: '#e74c3c15',
+    backgroundColor: "#e74c3c15",
     borderWidth: 1,
-    borderColor: '#e74c3c30',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: "#e74c3c30",
+    justifyContent: "center",
+    alignItems: "center",
   },
   revealName: {
-    color: '#e74c3c',
+    color: "#e74c3c",
     fontSize: 26,
-    fontWeight: '900',
+    fontWeight: "900",
   },
 
   // ── Palabra ──
   wordCard: {
-    width: '100%',
-    backgroundColor: '#0a0b14',
+    width: "100%",
+    backgroundColor: "#0a0b14",
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: '#2ecc7130',
+    borderColor: "#2ecc7130",
     padding: 18,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 24,
   },
   wordLabel: {
-    color: '#2ecc71',
+    color: "#2ecc71",
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 3,
     marginBottom: 8,
   },
   wordValue: {
-    color: '#2ecc71',
+    color: "#2ecc71",
     fontSize: 28,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 2,
   },
   wordCategory: {
     marginTop: 10,
-    backgroundColor: '#2ecc7110',
+    backgroundColor: "#2ecc7110",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
   wordCategoryText: {
-    color: '#2ecc7180',
+    color: "#2ecc7180",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   // ── Votos ──
   votesSection: {
-    width: '100%',
+    width: "100%",
     marginBottom: 24,
   },
   votesSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     marginBottom: 14,
   },
@@ -328,108 +399,148 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 9,
-    backgroundColor: '#00ffff10',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#00ffff10",
+    justifyContent: "center",
+    alignItems: "center",
   },
   votesTitle: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   voteRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0a0b14',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#0a0b14",
     borderRadius: 12,
     padding: 12,
     marginBottom: 6,
     gap: 10,
   },
   votePos: {
-    color: '#333',
+    color: "#333",
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: "800",
     width: 18,
-    textAlign: 'center',
+    textAlign: "center",
   },
   voteAvatar: {
     width: 32,
     height: 32,
     borderRadius: 10,
     borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   voteInfo: {
     flex: 1,
     gap: 4,
   },
   voteNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   voteName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   impostorTag: {
-    backgroundColor: '#e74c3c20',
+    backgroundColor: "#e74c3c20",
     borderRadius: 4,
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
   impostorTagText: {
-    color: '#e74c3c',
+    color: "#e74c3c",
     fontSize: 8,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 1,
   },
   voteBarTrack: {
     height: 3,
-    backgroundColor: '#1a1b2e',
+    backgroundColor: "#1a1b2e",
     borderRadius: 2,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   voteBarFill: {
-    height: '100%',
+    height: "100%",
     borderRadius: 2,
   },
   voteCount: {
     fontSize: 18,
-    fontWeight: '900',
+    fontWeight: "900",
     minWidth: 24,
-    textAlign: 'right',
+    textAlign: "right",
   },
 
   // ── Play Again ──
   playAgainSection: {
-    width: '100%',
+    width: "100%",
   },
   playAgainBtn: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     gap: 12,
-    width: '100%',
+    width: "100%",
     height: 56,
     borderRadius: 16,
-    backgroundColor: '#2ecc71',
-    shadowColor: '#2ecc71',
+    backgroundColor: "#2ecc71",
+    shadowColor: "#2ecc71",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 8,
   },
   playAgainText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 17,
-    fontWeight: '900',
+    fontWeight: "900",
     letterSpacing: 3,
   },
   btnPressed: {
     opacity: 0.85,
     transform: [{ scale: 0.97 }],
+  },
+
+  // ── Impostor adivinó ──
+  guessBanner: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "#e74c3c10",
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "#e74c3c25",
+    padding: 16,
+    marginBottom: 12,
+  },
+  guessBannerIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: "#e74c3c15",
+    borderWidth: 1,
+    borderColor: "#e74c3c30",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  guessBannerContent: {
+    flex: 1,
+  },
+  guessBannerTitle: {
+    color: "#e74c3c",
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 3,
+    marginBottom: 4,
+  },
+  guessBannerWord: {
+    color: "#e74c3c",
+    fontSize: 22,
+    fontWeight: "900",
+    letterSpacing: 1,
   },
 });

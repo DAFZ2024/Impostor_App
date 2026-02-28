@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { categories, getRandomWord } from '@/data/categories';
+import { categories, getRandomWord } from "@/data/categories";
+import React, { createContext, ReactNode, useContext, useState } from "react";
 
 export type Player = {
   id: number;
@@ -17,36 +17,41 @@ type GameState = {
   secretWord: string;
   impostorHint: string;
   impostorId: number | null;
-  phase: 'home' | 'setup' | 'roleReveal' | 'discussion' | 'voting' | 'results';
+  phase: "home" | "setup" | "roleReveal" | "discussion" | "voting" | "results";
   discussionTime: number; // seconds
   currentRevealIndex: number;
-  winner: 'impostor' | 'crew' | null;
+  winner: "impostor" | "crew" | null;
+  impostorGuessedWord: boolean;
 };
 
 type GameContextType = {
   state: GameState;
   addPlayer: (name: string) => void;
   removePlayer: (id: number) => void;
+  setPlayers: (names: string[]) => void;
   setCategoryIndex: (index: number) => void;
   setDiscussionTime: (seconds: number) => void;
   startGame: () => void;
   nextReveal: () => boolean;
   castVote: (voterId: number, targetId: number) => void;
-  calculateResults: () => 'impostor' | 'crew';
+  calculateResults: () => "impostor" | "crew";
+  impostorGuessWord: (guess: string) => boolean;
   resetGame: () => void;
-  setPhase: (phase: GameState['phase']) => void;
+  resetForNewGame: () => void;
+  setPhase: (phase: GameState["phase"]) => void;
 };
 
 const initialState: GameState = {
   players: [],
   categoryIndex: 0,
-  secretWord: '',
-  impostorHint: '',
+  secretWord: "",
+  impostorHint: "",
   impostorId: null,
-  phase: 'home',
+  phase: "home",
   discussionTime: 120,
   currentRevealIndex: 0,
   winner: null,
+  impostorGuessedWord: false,
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -63,7 +68,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
           id: prev.players.length + 1,
           name,
           isImpostor: false,
-          word: '',
+          word: "",
           votes: 0,
           hasVoted: false,
           eliminated: false,
@@ -76,6 +81,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({
       ...prev,
       players: prev.players.filter((p) => p.id !== id),
+    }));
+  };
+
+  const setPlayers = (names: string[]) => {
+    setState((prev) => ({
+      ...prev,
+      players: names.map((name, index) => ({
+        id: index + 1,
+        name,
+        isImpostor: false,
+        word: "",
+        votes: 0,
+        hasVoted: false,
+        eliminated: false,
+      })),
     }));
   };
 
@@ -99,7 +119,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const updatedPlayers = state.players.map((player, index) => ({
       ...player,
       isImpostor: index === impostorIndex,
-      word: index === impostorIndex ? '???' : word,
+      word: index === impostorIndex ? "???" : word,
       votes: 0,
       hasVoted: false,
       eliminated: false,
@@ -111,9 +131,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       secretWord: word,
       impostorHint: hint,
       impostorId: updatedPlayers[impostorIndex].id,
-      phase: 'roleReveal',
+      phase: "roleReveal",
       currentRevealIndex: 0,
       winner: null,
+      impostorGuessedWord: false,
     }));
   };
 
@@ -137,23 +158,55 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const calculateResults = (): 'impostor' | 'crew' => {
+  const calculateResults = (): "impostor" | "crew" => {
     const maxVotes = Math.max(...state.players.map((p) => p.votes));
     const mostVoted = state.players.filter((p) => p.votes === maxVotes);
 
     // If the most-voted player is the impostor, crew wins
     const crewWins = mostVoted.some((p) => p.isImpostor);
-    const winner = crewWins ? 'crew' : 'impostor';
+    const winner = crewWins ? "crew" : "impostor";
 
-    setState((prev) => ({ ...prev, winner, phase: 'results' }));
+    setState((prev) => ({ ...prev, winner, phase: "results" }));
     return winner;
+  };
+
+  const impostorGuessWord = (guess: string): boolean => {
+    const correct =
+      guess.trim().toLowerCase() === state.secretWord.trim().toLowerCase();
+    if (correct) {
+      setState((prev) => ({
+        ...prev,
+        winner: "impostor",
+        phase: "results",
+        impostorGuessedWord: true,
+      }));
+    }
+    return correct;
   };
 
   const resetGame = () => {
     setState(initialState);
   };
 
-  const setPhase = (phase: GameState['phase']) => {
+  const resetForNewGame = () => {
+    setState((prev) => ({
+      ...initialState,
+      players: prev.players.map((p, i) => ({
+        id: i + 1,
+        name: p.name,
+        isImpostor: false,
+        word: "",
+        votes: 0,
+        hasVoted: false,
+        eliminated: false,
+      })),
+      categoryIndex: prev.categoryIndex,
+      discussionTime: prev.discussionTime,
+      phase: "setup" as const,
+    }));
+  };
+
+  const setPhase = (phase: GameState["phase"]) => {
     setState((prev) => ({ ...prev, phase }));
   };
 
@@ -163,13 +216,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
         state,
         addPlayer,
         removePlayer,
+        setPlayers,
         setCategoryIndex,
         setDiscussionTime,
         startGame,
         nextReveal,
         castVote,
         calculateResults,
+        impostorGuessWord,
         resetGame,
+        resetForNewGame,
         setPhase,
       }}
     >
@@ -181,7 +237,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 export function useGame() {
   const context = useContext(GameContext);
   if (!context) {
-    throw new Error('useGame must be used within a GameProvider');
+    throw new Error("useGame must be used within a GameProvider");
   }
   return context;
 }
