@@ -63,7 +63,7 @@ export default function ResultsScreen() {
 
   const handlePlayAgain = () => {
     resetForNewGame();
-    router.replace("/setup");
+    router.navigate("/setup");
   };
 
   const winnerColor = crewWins ? "#2ecc71" : "#e74c3c";
