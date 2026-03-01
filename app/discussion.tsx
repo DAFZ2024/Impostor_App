@@ -20,6 +20,7 @@ import Animated, {
   FadeInDown,
   FadeInUp,
   ZoomIn,
+  SlideInUp,
 } from "react-native-reanimated";
 
 const PLAYER_COLORS = [
@@ -58,109 +59,185 @@ export default function DiscussionScreen() {
     router.replace("/voting");
   };
 
+  const dirColor = direction === "left" ? "#3498db" : "#2ecc71";
+
   // ── Pantalla previa: quién comienza y dirección ──
   if (!started) {
-    const playerColor =
-      PLAYER_COLORS[
-        state.players.indexOf(starterPlayer) % PLAYER_COLORS.length
-      ];
+    const playerIdx = state.players.indexOf(starterPlayer);
+    const playerColor = PLAYER_COLORS[playerIdx % PLAYER_COLORS.length];
+
     return (
       <View style={styles.container}>
         <View style={styles.nebula1} />
         <View style={styles.nebula2} />
+        <View
+          style={[
+            styles.nebulaAccent,
+            { backgroundColor: playerColor, top: 80, right: -40 },
+          ]}
+        />
 
+        {/* Header */}
         <Animated.View
           entering={FadeInDown.duration(500)}
-          style={styles.introBlock}
+          style={styles.introHeader}
         >
           <View style={styles.headerIconCircle}>
             <ChatIcon size={22} color="#00ffff" />
           </View>
           <Text style={styles.title}>DISCUSIÓN</Text>
-          <View style={styles.titleLine} />
+          <View style={styles.titleDivider}>
+            <View style={styles.titleLine} />
+            <View style={styles.titleDot} />
+            <View style={styles.titleLine} />
+          </View>
           <Text style={styles.introSubtitle}>Antes de comenzar...</Text>
         </Animated.View>
 
-        {/* Jugador que comienza */}
+        {/* Combined card: who starts + direction */}
         <Animated.View
           entering={ZoomIn.delay(200).duration(500)}
-          style={styles.starterCard}
+          style={styles.introCard}
         >
-          <Text style={styles.starterLabel}>COMIENZA</Text>
+          {/* Top accent */}
           <View
-            style={[
-              styles.starterAvatarCircle,
-              { borderColor: playerColor, backgroundColor: playerColor + "15" },
-            ]}
-          >
-            <UserIcon size={36} color={playerColor} />
+            style={[styles.introCardAccent, { backgroundColor: playerColor }]}
+          />
+
+          {/* Who starts */}
+          <View style={styles.starterSection}>
+            <View style={styles.introLabelWrap}>
+              <View style={styles.introLabelLine} />
+              <Text style={styles.introLabel}>COMIENZA</Text>
+              <View style={styles.introLabelLine} />
+            </View>
+
+            <View
+              style={[
+                styles.starterAvatarOuter,
+                { borderColor: playerColor + "30" },
+              ]}
+            >
+              <View
+                style={[
+                  styles.starterAvatarCircle,
+                  {
+                    borderColor: playerColor,
+                    backgroundColor: playerColor + "12",
+                  },
+                ]}
+              >
+                <Text style={[styles.starterAvatarText, { color: playerColor }]}>
+                  {starterPlayer.name.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.starterName, { color: playerColor }]}>
+              {starterPlayer.name}
+            </Text>
+            <Text style={styles.starterTag}>
+              Jugador {playerIdx + 1}
+            </Text>
           </View>
-          <Text style={[styles.starterName, { color: playerColor }]}>
-            {starterPlayer.name}
-          </Text>
+
+          {/* Separator */}
+          <View style={styles.introSeparator}>
+            <View style={styles.introSepLine} />
+            <View style={styles.introSepDot} />
+            <View style={styles.introSepLine} />
+          </View>
+
+          {/* Direction */}
+          <View style={styles.directionSection}>
+            <View style={styles.introLabelWrap}>
+              <View style={styles.introLabelLine} />
+              <Text style={styles.introLabel}>DIRECCIÓN</Text>
+              <View style={styles.introLabelLine} />
+            </View>
+
+            <View style={styles.directionRow}>
+              <View
+                style={[
+                  styles.directionIconCircle,
+                  {
+                    backgroundColor: dirColor + "10",
+                    borderColor: dirColor + "30",
+                  },
+                ]}
+              >
+                {direction === "left" ? (
+                  <RotateCcwIcon size={30} color={dirColor} />
+                ) : (
+                  <RotateCwIcon size={30} color={dirColor} />
+                )}
+              </View>
+
+              <View style={styles.directionInfo}>
+                <View style={styles.directionArrowRow}>
+                  {direction === "left" ? (
+                    <>
+                      <ArrowLeftIcon size={18} color={dirColor} />
+                      <Text style={[styles.directionText, { color: dirColor }]}>
+                        IZQUIERDA
+                      </Text>
+                      <ArrowLeftIcon size={18} color={dirColor} />
+                    </>
+                  ) : (
+                    <>
+                      <ArrowRightIcon size={18} color={dirColor} />
+                      <Text style={[styles.directionText, { color: dirColor }]}>
+                        DERECHA
+                      </Text>
+                      <ArrowRightIcon size={18} color={dirColor} />
+                    </>
+                  )}
+                </View>
+                <Text style={styles.directionHint}>
+                  {direction === "left"
+                    ? "Sentido antihorario"
+                    : "Sentido horario"}
+                </Text>
+              </View>
+            </View>
+          </View>
         </Animated.View>
 
-        {/* Dirección */}
+        {/* Player chips */}
         <Animated.View
-          entering={FadeIn.delay(450).duration(500)}
-          style={styles.directionCard}
+          entering={FadeIn.delay(450).duration(400)}
+          style={styles.playerChipsRow}
         >
-          <Text style={styles.directionLabel}>DIRECCIÓN</Text>
-          <View style={styles.directionRow}>
-            {direction === "left" ? (
-              <>
-                <View
+          {state.players.map((p, i) => {
+            const c = PLAYER_COLORS[i % PLAYER_COLORS.length];
+            const isStarter = p === starterPlayer;
+            return (
+              <View
+                key={p.id}
+                style={[
+                  styles.playerChip,
+                  { borderColor: c + "30" },
+                  isStarter && { borderColor: c, backgroundColor: c + "10" },
+                ]}
+              >
+                <View style={[styles.playerChipDot, { backgroundColor: c }]} />
+                <Text
                   style={[
-                    styles.directionIconCircle,
-                    { backgroundColor: "#3498db15", borderColor: "#3498db40" },
+                    styles.playerChipText,
+                    isStarter && { color: c, fontWeight: "800" },
                   ]}
+                  numberOfLines={1}
                 >
-                  <RotateCcwIcon size={32} color="#3498db" />
-                </View>
-                <View style={styles.directionInfo}>
-                  <View style={styles.directionArrowRow}>
-                    <ArrowLeftIcon size={20} color="#3498db" />
-                    <Text style={[styles.directionText, { color: "#3498db" }]}>
-                      IZQUIERDA
-                    </Text>
-                    <ArrowLeftIcon size={20} color="#3498db" />
-                  </View>
-                  <Text style={styles.directionHint}>
-                    Continúa en sentido antihorario
-                  </Text>
-                </View>
-              </>
-            ) : (
-              <>
-                <View
-                  style={[
-                    styles.directionIconCircle,
-                    { backgroundColor: "#2ecc7115", borderColor: "#2ecc7140" },
-                  ]}
-                >
-                  <RotateCwIcon size={32} color="#2ecc71" />
-                </View>
-                <View style={styles.directionInfo}>
-                  <View style={styles.directionArrowRow}>
-                    <ArrowRightIcon size={20} color="#2ecc71" />
-                    <Text style={[styles.directionText, { color: "#2ecc71" }]}>
-                      DERECHA
-                    </Text>
-                    <ArrowRightIcon size={20} color="#2ecc71" />
-                  </View>
-                  <Text style={styles.directionHint}>
-                    Continúa en sentido horario
-                  </Text>
-                </View>
-              </>
-            )}
-          </View>
+                  {p.name}
+                </Text>
+              </View>
+            );
+          })}
         </Animated.View>
 
         {/* Botón comenzar */}
         <Animated.View
-          entering={FadeInUp.delay(600).duration(400)}
-          style={styles.voteSection}
+          entering={SlideInUp.delay(600).duration(400)}
+          style={styles.bottomSection}
         >
           <Pressable
             onPress={() => setStarted(true)}
@@ -170,13 +247,14 @@ export default function DiscussionScreen() {
             ]}
           >
             <RocketIcon size={20} color="#fff" />
-            <Text style={styles.voteText}>COMENZAR DISCUSIÓN</Text>
+            <Text style={styles.actionBtnText}>COMENZAR DISCUSIÓN</Text>
           </Pressable>
         </Animated.View>
       </View>
     );
   }
 
+  // ── Pantalla de Discusión Activa ──
   return (
     <View style={styles.container}>
       {/* Nebulosas */}
@@ -188,45 +266,78 @@ export default function DiscussionScreen() {
         entering={FadeInDown.duration(400)}
         style={styles.headerBlock}
       >
-        <View style={styles.headerIconCircle}>
-          <ChatIcon size={22} color="#00ffff" />
+        <View style={styles.headerRow}>
+          <View style={styles.headerIconCircle}>
+            <ChatIcon size={20} color="#00ffff" />
+          </View>
+          <View style={styles.headerTextGroup}>
+            <Text style={styles.headerLabel}>EN CURSO</Text>
+            <Text style={styles.headerTitle}>DISCUSIÓN</Text>
+          </View>
+          <View
+            style={[
+              styles.headerStatusBadge,
+              timerDone && styles.headerStatusBadgeUrgent,
+            ]}
+          >
+            <View
+              style={[
+                styles.headerStatusDot,
+                {
+                  backgroundColor: timerDone ? "#e74c3c" : "#2ecc71",
+                },
+              ]}
+            />
+            <Text
+              style={[
+                styles.headerStatusText,
+                timerDone && { color: "#e74c3c" },
+              ]}
+            >
+              {timerDone ? "TIEMPO" : "ACTIVA"}
+            </Text>
+          </View>
         </View>
-        <Text style={styles.title}>DISCUSIÓN</Text>
-        <View style={styles.titleLine} />
-        <Text style={styles.subtitle}>
-          Discutan entre todos y descubran al impostor
-        </Text>
       </Animated.View>
 
       {/* Reglas rápidas */}
       <Animated.View
         entering={FadeInDown.delay(150).duration(400)}
-        style={styles.rulesContainer}
+        style={styles.rulesCard}
       >
-        <View style={styles.ruleRow}>
-          <View style={[styles.ruleIcon, { backgroundColor: "#00ffff10" }]}>
-            <ChatIcon size={16} color="#00ffff" />
-          </View>
-          <Text style={styles.ruleText}>
-            Describan la palabra sin decirla directamente
-          </Text>
+        <View style={styles.rulesHeader}>
+          <Text style={styles.rulesHeaderText}>REGLAS</Text>
         </View>
-        <View style={styles.ruleDivider} />
-        <View style={styles.ruleRow}>
-          <View style={[styles.ruleIcon, { backgroundColor: "#f1c40f10" }]}>
-            <EyeIcon size={16} color="#f1c40f" />
+        {[
+          {
+            icon: <ChatIcon size={15} color="#00ffff" />,
+            bg: "#00ffff",
+            text: "Describan la palabra sin decirla directamente",
+          },
+          {
+            icon: <EyeIcon size={15} color="#f1c40f" />,
+            bg: "#f1c40f",
+            text: "Observen quién actúa sospechoso",
+          },
+          {
+            icon: <UserIcon size={15} color="#e74c3c" />,
+            bg: "#e74c3c",
+            text: "Hagan preguntas para exponer al impostor",
+          },
+        ].map((rule, index) => (
+          <View key={index}>
+            {index > 0 && <View style={styles.ruleDivider} />}
+            <View style={styles.ruleRow}>
+              <View
+                style={[styles.ruleIcon, { backgroundColor: rule.bg + "10" }]}
+              >
+                {rule.icon}
+              </View>
+              <Text style={styles.ruleText}>{rule.text}</Text>
+              <View style={[styles.ruleAccent, { backgroundColor: rule.bg }]} />
+            </View>
           </View>
-          <Text style={styles.ruleText}>Observen quién actúa sospechoso</Text>
-        </View>
-        <View style={styles.ruleDivider} />
-        <View style={styles.ruleRow}>
-          <View style={[styles.ruleIcon, { backgroundColor: "#e74c3c10" }]}>
-            <UserIcon size={16} color="#e74c3c" />
-          </View>
-          <Text style={styles.ruleText}>
-            Hagan preguntas para exponer al impostor
-          </Text>
-        </View>
+        ))}
       </Animated.View>
 
       {/* Timer */}
@@ -234,6 +345,14 @@ export default function DiscussionScreen() {
         entering={ZoomIn.delay(300).duration(500)}
         style={styles.timerSection}
       >
+        <View
+          style={[
+            styles.timerGlow,
+            {
+              backgroundColor: timerDone ? "#e74c3c" : "#00ffff",
+            },
+          ]}
+        />
         <TimerCircle
           totalSeconds={state.discussionTime}
           onComplete={handleTimerComplete}
@@ -245,11 +364,15 @@ export default function DiscussionScreen() {
 
       {/* Mensaje de tiempo agotado */}
       {timerDone && (
-        <Animated.View
-          entering={ZoomIn.duration(300)}
-          style={styles.timeUpBadge}
-        >
-          <Text style={styles.timeUpText}>¡TIEMPO AGOTADO!</Text>
+        <Animated.View entering={ZoomIn.duration(300)} style={styles.timeUpCard}>
+          <View style={styles.timeUpStripe} />
+          <View style={styles.timeUpContent}>
+            <Text style={styles.timeUpEmoji}>⏰</Text>
+            <View>
+              <Text style={styles.timeUpText}>¡TIEMPO AGOTADO!</Text>
+              <Text style={styles.timeUpSub}>Es hora de votar</Text>
+            </View>
+          </View>
         </Animated.View>
       )}
 
@@ -259,7 +382,9 @@ export default function DiscussionScreen() {
           entering={FadeInUp.delay(400).duration(400)}
           style={styles.tipBox}
         >
-          <LightbulbIcon size={16} color="#f1c40f" />
+          <View style={styles.tipIconWrap}>
+            <LightbulbIcon size={14} color="#f1c40f" />
+          </View>
           <Text style={styles.tipText}>
             Pueden votar antes si todos están listos
           </Text>
@@ -269,7 +394,7 @@ export default function DiscussionScreen() {
       {/* Botón votar */}
       <Animated.View
         entering={FadeInUp.delay(500).duration(400)}
-        style={styles.voteSection}
+        style={styles.bottomSection}
       >
         <Pressable
           onPress={handleGoToVoting}
@@ -280,7 +405,10 @@ export default function DiscussionScreen() {
           ]}
         >
           <VoteIcon size={20} color="#fff" />
-          <Text style={styles.voteText}>IR A VOTAR</Text>
+          <Text style={styles.actionBtnText}>IR A VOTAR</Text>
+          <View style={styles.voteBtnArrow}>
+            <ArrowRightIcon size={16} color="#ffffff80" />
+          </View>
         </Pressable>
       </Animated.View>
     </View>
@@ -293,7 +421,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#050610",
     alignItems: "center",
     paddingTop: 55,
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
   },
 
   // ── Nebulosas ──
@@ -317,22 +445,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#e74c3c",
     opacity: 0.025,
   },
+  nebulaAccent: {
+    position: "absolute",
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    opacity: 0.04,
+  },
 
-  // ── Header ──
-  headerBlock: {
+  // ── Intro Header ──
+  introHeader: {
     alignItems: "center",
-    marginBottom: 18,
+    marginBottom: 24,
   },
   headerIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: "#00ffff10",
+    width: 46,
+    height: 46,
+    borderRadius: 15,
+    backgroundColor: "#00ffff08",
     borderWidth: 1,
-    borderColor: "#00ffff20",
+    borderColor: "#00ffff18",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   title: {
     color: "#00ffff",
@@ -340,199 +475,137 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 6,
   },
-  titleLine: {
-    width: 40,
-    height: 2,
-    backgroundColor: "#e74c3c",
-    marginVertical: 8,
-    borderRadius: 1,
-  },
-  subtitle: {
-    color: "#4a5568",
-    fontSize: 13,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-
-  // ── Reglas ──
-  rulesContainer: {
-    width: "100%",
-    backgroundColor: "#0a0b14",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#1a1b2e",
-    padding: 14,
-    marginBottom: 20,
-  },
-  ruleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 6,
-  },
-  ruleIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  ruleText: {
-    color: "#8a95a5",
-    fontSize: 12,
-    flex: 1,
-    fontWeight: "500",
-  },
-  ruleDivider: {
-    height: 1,
-    backgroundColor: "#1a1b2e",
-    marginVertical: 4,
-  },
-
-  // ── Timer ──
-  timerSection: {
-    marginBottom: 15,
-  },
-
-  // ── Time Up ──
-  timeUpBadge: {
-    backgroundColor: "#e74c3c15",
-    borderWidth: 1,
-    borderColor: "#e74c3c40",
-    borderRadius: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginBottom: 10,
-  },
-  timeUpText: {
-    color: "#e74c3c",
-    fontSize: 18,
-    fontWeight: "900",
-    letterSpacing: 3,
-  },
-
-  // ── Tip ──
-  tipBox: {
+  titleDivider: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#f1c40f08",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginBottom: 10,
+    marginVertical: 10,
   },
-  tipText: {
-    color: "#666",
-    fontSize: 12,
-    fontWeight: "600",
+  titleLine: {
+    width: 30,
+    height: 1,
+    backgroundColor: "#e74c3c40",
   },
-
-  // ── Botón votar ──
-  voteSection: {
-    width: "100%",
-    marginTop: "auto",
-    marginBottom: 30,
-  },
-  voteButton: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-    width: "100%",
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: "#3498db",
-    shadowColor: "#3498db",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  voteButtonUrgent: {
+  titleDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: "#e74c3c",
-    shadowColor: "#e74c3c",
-  },
-  voteText: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "900",
-    letterSpacing: 3,
-  },
-  btnPressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.97 }],
-  },
-
-  // ── Intro (pre-discusión) ──
-  introBlock: {
-    alignItems: "center",
-    marginBottom: 30,
   },
   introSubtitle: {
     color: "#4a5568",
     fontSize: 14,
     fontWeight: "600",
-    marginTop: 4,
   },
-  starterCard: {
-    alignItems: "center",
+
+  // ── Intro Combined Card ──
+  introCard: {
+    width: "100%",
     backgroundColor: "#0a0b14",
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: "#1a1b2e",
-    paddingVertical: 28,
-    paddingHorizontal: 30,
-    width: "100%",
+    paddingVertical: 24,
+    paddingHorizontal: 22,
+    marginBottom: 16,
+    overflow: "hidden",
+    position: "relative",
+  },
+  introCardAccent: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    opacity: 0.6,
+  },
+  starterSection: {
+    alignItems: "center",
+  },
+  introLabelWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
     marginBottom: 16,
   },
-  starterLabel: {
+  introLabelLine: {
+    width: 20,
+    height: 1,
+    backgroundColor: "#ffffff0a",
+  },
+  introLabel: {
     color: "#555",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "800",
     letterSpacing: 3,
-    marginBottom: 16,
+  },
+  starterAvatarOuter: {
+    width: 94,
+    height: 94,
+    borderRadius: 47,
+    borderWidth: 1.5,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
   },
   starterAvatarCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     borderWidth: 2.5,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 14,
+  },
+  starterAvatarText: {
+    fontSize: 30,
+    fontWeight: "900",
   },
   starterName: {
     fontSize: 24,
     fontWeight: "900",
     letterSpacing: 1,
   },
-  directionCard: {
-    alignItems: "center",
-    backgroundColor: "#0a0b14",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#1a1b2e",
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    width: "100%",
-    marginBottom: 16,
+  starterTag: {
+    color: "#ffffff20",
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 1,
+    marginTop: 4,
   },
-  directionLabel: {
-    color: "#555",
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 3,
-    marginBottom: 14,
+
+  // ── Separator ──
+  introSeparator: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  introSepLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#ffffff06",
+  },
+  introSepDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: "#ffffff10",
+  },
+
+  // ── Direction ──
+  directionSection: {
+    alignItems: "center",
   },
   directionRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
+    width: "100%",
   },
   directionIconCircle: {
-    width: 60,
-    height: 60,
+    width: 62,
+    height: 62,
     borderRadius: 20,
     borderWidth: 1.5,
     justifyContent: "center",
@@ -558,19 +631,283 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginTop: 4,
   },
+
+  // ── Player chips ──
+  playerChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "center",
+    width: "100%",
+    marginBottom: 16,
+  },
+  playerChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#0a0b14",
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  playerChipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  playerChipText: {
+    color: "#555",
+    fontSize: 12,
+    fontWeight: "600",
+    maxWidth: 70,
+  },
+
+  // ── Discussion Header (timer view) ──
+  headerBlock: {
+    width: "100%",
+    marginBottom: 14,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  headerTextGroup: {
+    flex: 1,
+  },
+  headerLabel: {
+    color: "#00ffff60",
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 3,
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "900",
+    letterSpacing: 4,
+    marginTop: 1,
+  },
+  headerStatusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#2ecc7108",
+    borderWidth: 1,
+    borderColor: "#2ecc7125",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  headerStatusBadgeUrgent: {
+    backgroundColor: "#e74c3c08",
+    borderColor: "#e74c3c25",
+  },
+  headerStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  headerStatusText: {
+    color: "#2ecc71",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+
+  // ── Reglas ──
+  rulesCard: {
+    width: "100%",
+    backgroundColor: "#0a0b1480",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#ffffff08",
+    overflow: "hidden",
+    marginBottom: 18,
+  },
+  rulesHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  rulesHeaderText: {
+    color: "#ffffff20",
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 3,
+  },
+  ruleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    position: "relative",
+  },
+  ruleIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  ruleText: {
+    color: "#8a95a5",
+    fontSize: 12,
+    flex: 1,
+    fontWeight: "500",
+    lineHeight: 17,
+  },
+  ruleAccent: {
+    width: 3,
+    height: 16,
+    borderRadius: 2,
+    opacity: 0.3,
+  },
+  ruleDivider: {
+    height: 1,
+    backgroundColor: "#ffffff05",
+    marginHorizontal: 16,
+  },
+
+  // ── Timer ──
+  timerSection: {
+    marginBottom: 14,
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  timerGlow: {
+    position: "absolute",
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    opacity: 0.04,
+  },
+
+  // ── Time Up ──
+  timeUpCard: {
+    width: "100%",
+    backgroundColor: "#e74c3c08",
+    borderWidth: 1,
+    borderColor: "#e74c3c30",
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 12,
+  },
+  timeUpStripe: {
+    height: 3,
+    backgroundColor: "#e74c3c",
+    opacity: 0.6,
+  },
+  timeUpContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    padding: 14,
+  },
+  timeUpEmoji: {
+    fontSize: 28,
+  },
+  timeUpText: {
+    color: "#e74c3c",
+    fontSize: 17,
+    fontWeight: "900",
+    letterSpacing: 2,
+  },
+  timeUpSub: {
+    color: "#e74c3c80",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+
+  // ── Tip ──
+  tipBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#f1c40f06",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#f1c40f10",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 10,
+    width: "100%",
+  },
+  tipIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#f1c40f10",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  tipText: {
+    color: "#666",
+    fontSize: 12,
+    fontWeight: "600",
+    flex: 1,
+  },
+
+  // ── Botones ──
+  bottomSection: {
+    width: "100%",
+    marginTop: "auto",
+    marginBottom: 30,
+  },
+  voteButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+    width: "100%",
+    height: 58,
+    borderRadius: 18,
+    backgroundColor: "#3498db",
+    shadowColor: "#3498db",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  voteButtonUrgent: {
+    backgroundColor: "#e74c3c",
+    shadowColor: "#e74c3c",
+  },
+  voteBtnArrow: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#ffffff10",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   startDiscussionBtn: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
     gap: 12,
     width: "100%",
-    height: 56,
-    borderRadius: 16,
+    height: 58,
+    borderRadius: 18,
     backgroundColor: "#2ecc71",
     shadowColor: "#2ecc71",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 10,
+  },
+  actionBtnText: {
+    color: "#fff",
+    fontSize: 17,
+    fontWeight: "900",
+    letterSpacing: 3,
+  },
+  btnPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
   },
 });

@@ -236,48 +236,7 @@ export default function HomeScreen() {
         </Animated.View>
       </Animated.View>
 
-      {/* Info cards */}
-      <Animated.View
-        entering={FadeInUp.delay(550).duration(500)}
-        style={styles.infoRow}
-      >
-        <View style={styles.infoCard}>
-          <View
-            style={[
-              styles.infoIconCircle,
-              { backgroundColor: "#3498db10", borderColor: "#3498db25" },
-            ]}
-          >
-            <UsersIcon size={18} color="#3498db" />
-          </View>
-          <Text style={[styles.infoValue, { color: "#3498db" }]}>3-10</Text>
-          <Text style={styles.infoLabel}>Jugadores</Text>
-        </View>
-        <View style={[styles.infoCard, styles.infoCardMiddle]}>
-          <View
-            style={[
-              styles.infoIconCircle,
-              { backgroundColor: "#e74c3c10", borderColor: "#e74c3c25" },
-            ]}
-          >
-            <ZapIcon size={18} color="#e74c3c" />
-          </View>
-          <Text style={[styles.infoValue, { color: "#e74c3c" }]}>5-15</Text>
-          <Text style={styles.infoLabel}>Minutos</Text>
-        </View>
-        <View style={styles.infoCard}>
-          <View
-            style={[
-              styles.infoIconCircle,
-              { backgroundColor: "#9b59b610", borderColor: "#9b59b625" },
-            ]}
-          >
-            <GridIcon size={18} color="#9b59b6" />
-          </View>
-          <Text style={[styles.infoValue, { color: "#9b59b6" }]}>8</Text>
-          <Text style={styles.infoLabel}>Categorías</Text>
-        </View>
-      </Animated.View>
+      
 
       {/* Botones */}
       <Animated.View
