@@ -1,30 +1,29 @@
+import { showAlert } from "@/components/CustomAlert";
 import {
-  AlienIcon,
-  ArrowRightIcon,
-  CheckIcon,
-  EyeIcon,
-  UserIcon,
-  VoteIcon,
+    AlienIcon,
+    ArrowRightIcon,
+    CheckIcon,
+    EyeIcon,
+    VoteIcon
 } from "@/components/Icons";
 import { useGame } from "@/context/GameContext";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeInUp,
-  ZoomIn,
-  SlideInUp,
-  SlideInRight,
+    FadeIn,
+    FadeInDown,
+    FadeInUp,
+    SlideInRight,
+    SlideInUp,
+    ZoomIn,
 } from "react-native-reanimated";
 
 const PLAYER_COLORS = [
@@ -65,7 +64,7 @@ export default function VotingScreen() {
 
   const handleSelectTarget = (targetId: number) => {
     if (targetId === currentVoter.id) {
-      Alert.alert("¡Error!", "No puedes votar por ti mismo.");
+      showAlert("¡Error!", "No puedes votar por ti mismo.");
       return;
     }
     setSelectedTarget(targetId);
@@ -73,10 +72,7 @@ export default function VotingScreen() {
 
   const handleGuessWord = () => {
     if (!wordGuess.trim()) {
-      Alert.alert(
-        "Escribe algo",
-        "Debes escribir la palabra que crees que es.",
-      );
+      showAlert("Escribe algo", "Debes escribir la palabra que crees que es.");
       return;
     }
     const correct = impostorGuessWord(wordGuess);
@@ -107,7 +103,7 @@ export default function VotingScreen() {
 
   const handleConfirmVote = () => {
     if (selectedTarget === null) {
-      Alert.alert("Selecciona", "Debes votar por alguien.");
+      showAlert("Selecciona", "Debes votar por alguien.");
       return;
     }
     castVote(currentVoter.id, selectedTarget);
@@ -133,10 +129,18 @@ export default function VotingScreen() {
       <View style={styles.container}>
         <View style={styles.nebula1} />
         <View style={[styles.nebula2, { backgroundColor: voterColor }]} />
-        <View style={[styles.nebulaSmall, { backgroundColor: voterColor, top: 100, left: -30 }]} />
+        <View
+          style={[
+            styles.nebulaSmall,
+            { backgroundColor: voterColor, top: 100, left: -30 },
+          ]}
+        />
 
         {/* Step pills */}
-        <Animated.View entering={FadeInDown.duration(300)} style={styles.stepsSection}>
+        <Animated.View
+          entering={FadeInDown.duration(300)}
+          style={styles.stepsSection}
+        >
           <View style={styles.stepsRow}>
             {state.players.map((_, i) => {
               const c = PLAYER_COLORS[i % PLAYER_COLORS.length];
@@ -158,8 +162,18 @@ export default function VotingScreen() {
             <Text style={styles.stepsLabel}>
               Voto {currentVoterIndex + 1} de {state.players.length}
             </Text>
-            <View style={[styles.stepsBadge, { backgroundColor: voterColor + '12', borderColor: voterColor + '30' }]}>
-              <Text style={[styles.stepsBadgeText, { color: voterColor }]}>{Math.round(progress)}%</Text>
+            <View
+              style={[
+                styles.stepsBadge,
+                {
+                  backgroundColor: voterColor + "12",
+                  borderColor: voterColor + "30",
+                },
+              ]}
+            >
+              <Text style={[styles.stepsBadgeText, { color: voterColor }]}>
+                {Math.round(progress)}%
+              </Text>
             </View>
           </View>
         </Animated.View>
@@ -192,10 +206,17 @@ export default function VotingScreen() {
         {/* Tarjeta del votante */}
         <Animated.View
           entering={ZoomIn.delay(300).duration(400)}
-          style={[styles.voterCard, { borderColor: voterColor + '40' }]}
+          style={[styles.voterCard, { borderColor: voterColor + "40" }]}
         >
-          <View style={[styles.voterCardAccent, { backgroundColor: voterColor }]} />
-          <View style={[styles.voterAvatarOuter, { borderColor: voterColor + '30' }]}>
+          <View
+            style={[styles.voterCardAccent, { backgroundColor: voterColor }]}
+          />
+          <View
+            style={[
+              styles.voterAvatarOuter,
+              { borderColor: voterColor + "30" },
+            ]}
+          >
             <View
               style={[
                 styles.voterAvatar,
@@ -257,9 +278,13 @@ export default function VotingScreen() {
           </View>
           <Text style={styles.guessTitle}>OPORTUNIDAD SECRETA</Text>
           <View style={styles.titleDivider}>
-            <View style={[styles.titleLine, { backgroundColor: '#e74c3c40' }]} />
-            <View style={[styles.titleDot, { backgroundColor: '#e74c3c' }]} />
-            <View style={[styles.titleLine, { backgroundColor: '#e74c3c40' }]} />
+            <View
+              style={[styles.titleLine, { backgroundColor: "#e74c3c40" }]}
+            />
+            <View style={[styles.titleDot, { backgroundColor: "#e74c3c" }]} />
+            <View
+              style={[styles.titleLine, { backgroundColor: "#e74c3c40" }]}
+            />
           </View>
           <Text style={styles.guessSubtitle}>
             Como impostor, puedes intentar adivinar la palabra secreta
@@ -408,8 +433,15 @@ export default function VotingScreen() {
               {currentVoter.name}
             </Text>
           </View>
-          <View style={[styles.voteHeaderBadge, { borderColor: voterColor + '30' }]}>
-            <View style={[styles.voteHeaderBadgeDot, { backgroundColor: voterColor }]} />
+          <View
+            style={[styles.voteHeaderBadge, { borderColor: voterColor + "30" }]}
+          >
+            <View
+              style={[
+                styles.voteHeaderBadgeDot,
+                { backgroundColor: voterColor },
+              ]}
+            />
             <Text style={[styles.voteHeaderBadgeText, { color: voterColor }]}>
               {currentVoterIndex + 1}/{state.players.length}
             </Text>
@@ -450,21 +482,26 @@ export default function VotingScreen() {
                 ]}
               >
                 {/* Left accent bar */}
-                <View style={[
-                  styles.voteCardAccent,
-                  { backgroundColor: isSelected ? pColor : 'transparent' },
-                ]} />
+                <View
+                  style={[
+                    styles.voteCardAccent,
+                    { backgroundColor: isSelected ? pColor : "transparent" },
+                  ]}
+                />
 
                 <View
                   style={[
                     styles.voteAvatarRing,
-                    { borderColor: isSelected ? pColor + '40' : 'transparent' },
+                    { borderColor: isSelected ? pColor + "40" : "transparent" },
                   ]}
                 >
                   <View
                     style={[
                       styles.voteAvatar,
-                      { backgroundColor: pColor + "15", borderColor: pColor + (isSelected ? '' : '60') },
+                      {
+                        backgroundColor: pColor + "15",
+                        borderColor: pColor + (isSelected ? "" : "60"),
+                      },
                     ]}
                   >
                     <Text style={[styles.voteAvatarText, { color: pColor }]}>
@@ -479,7 +516,12 @@ export default function VotingScreen() {
                   >
                     {player.name}
                   </Text>
-                  <Text style={[styles.voteNameSub, isSelected && { color: pColor + '80' }]}>
+                  <Text
+                    style={[
+                      styles.voteNameSub,
+                      isSelected && { color: pColor + "80" },
+                    ]}
+                  >
                     Jugador {index + 1}
                   </Text>
                 </View>
@@ -489,7 +531,10 @@ export default function VotingScreen() {
                     entering={ZoomIn.duration(200)}
                     style={[
                       styles.selectedBadge,
-                      { backgroundColor: pColor + "20", borderColor: pColor + '40' },
+                      {
+                        backgroundColor: pColor + "20",
+                        borderColor: pColor + "40",
+                      },
                     ]}
                   >
                     <CheckIcon size={16} color={pColor} />
@@ -509,11 +554,14 @@ export default function VotingScreen() {
         style={styles.confirmSection}
       >
         {selectedTarget !== null && (
-          <Animated.View entering={FadeIn.duration(200)} style={styles.selectedSummary}>
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            style={styles.selectedSummary}
+          >
             <Text style={styles.selectedSummaryText}>
               Votando por:{" "}
               <Text style={{ fontWeight: "900", color: "#fff" }}>
-                {state.players.find(p => p.id === selectedTarget)?.name}
+                {state.players.find((p) => p.id === selectedTarget)?.name}
               </Text>
             </Text>
           </Animated.View>
@@ -527,7 +575,9 @@ export default function VotingScreen() {
           ]}
         >
           <CheckIcon size={20} color={selectedTarget ? "#fff" : "#555"} />
-          <Text style={[styles.actionBtnText, !selectedTarget && { color: "#555" }]}>
+          <Text
+            style={[styles.actionBtnText, !selectedTarget && { color: "#555" }]}
+          >
             CONFIRMAR VOTO
           </Text>
         </Pressable>

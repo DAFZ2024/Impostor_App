@@ -1,59 +1,59 @@
+import { showAlert } from "@/components/CustomAlert";
 import {
-  AlienIcon,
-  ArrowLeftIcon,
-  BriefcaseIcon,
-  ClockIcon,
-  CloseIcon,
-  DownloadIcon,
-  FilmIcon,
-  FolderIcon,
-  GlobeIcon,
-  MapPinIcon,
-  PawIcon,
-  PlusIcon,
-  RocketIcon,
-  SaveIcon,
-  SoccerIcon,
-  TrashIcon,
-  UserIcon,
-  UsersIcon,
-  UtensilsIcon,
-  WrenchIcon,
+    AlienIcon,
+    ArrowLeftIcon,
+    BriefcaseIcon,
+    ClockIcon,
+    CloseIcon,
+    DownloadIcon,
+    FilmIcon,
+    FolderIcon,
+    GlobeIcon,
+    MapPinIcon,
+    PawIcon,
+    PlusIcon,
+    RocketIcon,
+    SaveIcon,
+    SoccerIcon,
+    TrashIcon,
+    UserIcon,
+    UsersIcon,
+    UtensilsIcon,
+    WrenchIcon,
 } from "@/components/Icons";
+import { useAuth } from "@/context/AuthContext";
 import { useGame } from "@/context/GameContext";
 import { categories } from "@/data/categories";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "@/lib/supabase";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
-  Dimensions,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Dimensions,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeInUp,
-  SlideInRight,
+    FadeIn,
+    FadeInDown,
+    FadeInUp,
+    SlideInRight,
 } from "react-native-reanimated";
 
 const { width } = Dimensions.get("window");
 const TIME_OPTIONS = [60, 120, 180, 300];
-const GROUPS_STORAGE_KEY = "@impostor_saved_groups";
 
 type SavedGroup = {
   id: string;
   name: string;
   players: string[];
-  createdAt: number;
+  created_at: string;
 };
 
 const PLAYER_COLORS = [
@@ -95,6 +95,7 @@ export default function SetupScreen() {
     setDiscussionTime,
     startGame,
   } = useGame();
+  const { user } = useAuth();
   const [playerName, setPlayerName] = useState("");
 
   // ── Grupos guardados ──
@@ -109,42 +110,55 @@ export default function SetupScreen() {
   }, []);
 
   const loadGroups = useCallback(async () => {
+    if (!user) return;
     try {
-      const json = await AsyncStorage.getItem(GROUPS_STORAGE_KEY);
-      if (json) setSavedGroups(JSON.parse(json));
+      const { data, error } = await supabase
+        .from("saved_groups")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (data && !error) {
+        setSavedGroups(data as SavedGroup[]);
+      }
     } catch {
       console.warn("Error cargando grupos");
     }
-  }, []);
+  }, [user]);
 
   const saveGroup = async () => {
     const name = groupName.trim();
     if (!name) {
-      Alert.alert("Nombre requerido", "Escribe un nombre para el grupo.");
+      showAlert("Nombre requerido", "Escribe un nombre para el grupo.");
       return;
     }
     if (state.players.length === 0) {
-      Alert.alert("Sin jugadores", "Agrega jugadores antes de guardar.");
+      showAlert("Sin jugadores", "Agrega jugadores antes de guardar.");
       return;
     }
-    const newGroup: SavedGroup = {
-      id: Date.now().toString(),
-      name,
-      players: state.players.map((p) => p.name),
-      createdAt: Date.now(),
-    };
-    const updated = [...savedGroups, newGroup];
+    if (!user) return;
+
     try {
-      await AsyncStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(updated));
-      setSavedGroups(updated);
+      const { error } = await supabase.from("saved_groups").insert({
+        user_id: user.id,
+        name,
+        players: state.players.map((p) => p.name),
+      });
+
+      if (error) {
+        showAlert("Error", "No se pudo guardar el grupo: " + error.message);
+        return;
+      }
+
       setGroupName("");
       setShowSaveInput(false);
-      Alert.alert(
+      showAlert(
         "Guardado ✓",
-        `Grupo "${name}" guardado con ${newGroup.players.length} jugadores.`,
+        `Grupo "${name}" guardado con ${state.players.length} jugadores.`,
       );
+      loadGroups();
     } catch {
-      Alert.alert("Error", "No se pudo guardar el grupo.");
+      showAlert("Error", "No se pudo guardar el grupo.");
     }
   };
 
@@ -154,17 +168,24 @@ export default function SetupScreen() {
   };
 
   const deleteGroup = async (id: string) => {
-    const updated = savedGroups.filter((g) => g.id !== id);
     try {
-      await AsyncStorage.setItem(GROUPS_STORAGE_KEY, JSON.stringify(updated));
-      setSavedGroups(updated);
+      const { error } = await supabase
+        .from("saved_groups")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        showAlert("Error", "No se pudo eliminar el grupo.");
+        return;
+      }
+      loadGroups();
     } catch {
-      Alert.alert("Error", "No se pudo eliminar el grupo.");
+      showAlert("Error", "No se pudo eliminar el grupo.");
     }
   };
 
   const confirmDeleteGroup = (group: SavedGroup) => {
-    Alert.alert("Eliminar grupo", `¿Eliminar "${group.name}"?`, [
+    showAlert("Eliminar grupo", `¿Eliminar "${group.name}"?`, [
       { text: "Cancelar", style: "cancel" },
       {
         text: "Eliminar",
@@ -178,16 +199,13 @@ export default function SetupScreen() {
     const name = playerName.trim();
     if (!name) return;
     if (state.players.length >= 10) {
-      Alert.alert(
-        "Máximo alcanzado",
-        "Solo puedes agregar hasta 10 jugadores.",
-      );
+      showAlert("Máximo alcanzado", "Solo puedes agregar hasta 10 jugadores.");
       return;
     }
     if (
       state.players.some((p) => p.name.toLowerCase() === name.toLowerCase())
     ) {
-      Alert.alert("Nombre repetido", "Ese nombre ya existe.");
+      showAlert("Nombre repetido", "Ese nombre ya existe.");
       return;
     }
     addPlayer(name);
@@ -196,7 +214,7 @@ export default function SetupScreen() {
 
   const handleStart = () => {
     if (state.players.length < 3) {
-      Alert.alert(
+      showAlert(
         "Pocos jugadores",
         "Necesitas al menos 3 jugadores para empezar.",
       );
@@ -372,7 +390,7 @@ export default function SetupScreen() {
                 <Pressable
                   onPress={() => {
                     if (state.players.length === 0) {
-                      Alert.alert(
+                      showAlert(
                         "Sin jugadores",
                         "Agrega jugadores antes de guardar.",
                       );
@@ -572,9 +590,7 @@ export default function SetupScreen() {
                       isActive && styles.categoryCardActive,
                     ]}
                   >
-                    {isActive && (
-                      <View style={styles.categoryGlowDot} />
-                    )}
+                    {isActive && <View style={styles.categoryGlowDot} />}
                     <View
                       style={[
                         styles.categoryIconContainer,
@@ -636,7 +652,12 @@ export default function SetupScreen() {
                   >
                     {isActive && (
                       <View style={styles.timeActiveIndicator}>
-                        <View style={[styles.timeActiveIndicatorInner, { backgroundColor: "#f1c40f" }]} />
+                        <View
+                          style={[
+                            styles.timeActiveIndicatorInner,
+                            { backgroundColor: "#f1c40f" },
+                          ]}
+                        />
                       </View>
                     )}
                     <Text
@@ -704,10 +725,12 @@ export default function SetupScreen() {
                 pressed && canStart && styles.btnPressed,
               ]}
             >
-              <View style={[
-                styles.startButtonInner,
-                !canStart && { backgroundColor: "#1a1b2e" },
-              ]}>
+              <View
+                style={[
+                  styles.startButtonInner,
+                  !canStart && { backgroundColor: "#1a1b2e" },
+                ]}
+              >
                 <RocketIcon size={22} color={canStart ? "#fff" : "#555"} />
                 <Text
                   style={[

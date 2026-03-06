@@ -812,3 +812,273 @@ export function WrenchIcon({ size = 24, color = "#fff" }: IconProps) {
     </Svg>
   );
 }
+
+// ── Check Circle / Verificado ──
+export function CheckCircleIcon({ size = 24, color = "#2ecc71" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Circle cx="12" cy="12" r="10" />
+      <Polyline points="9,12 11,14 15,10" />
+    </Svg>
+  );
+}
+
+// ── Copiar / Copy ──
+export function CopyIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <Path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </Svg>
+  );
+}
+
+// ── Compartir / Share ──
+export function ShareIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Circle cx="18" cy="5" r="3" />
+      <Circle cx="6" cy="12" r="3" />
+      <Circle cx="18" cy="19" r="3" />
+      <Line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+      <Line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+    </Svg>
+  );
+}
+
+// ── Wifi / Señal ──
+export function WifiIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M5 12.55a11 11 0 0 1 14.08 0" />
+      <Path d="M1.42 9a16 16 0 0 1 21.16 0" />
+      <Path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+      <Circle cx="12" cy="20" r="1" fill={color} />
+    </Svg>
+  );
+}
+
+// ── Corona / Crown ──
+export function CrownIcon({ size = 24, color = "#f1c40f" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M2 4l3 12h14l3-12-6 7-4-9-4 9-6-7z" />
+      <Path d="M5 16h14v4H5z" />
+      <Circle cx="6" cy="4" r="1" fill={color} />
+      <Circle cx="18" cy="4" r="1" fill={color} />
+      <Circle cx="12" cy="2" r="1" fill={color} />
+    </Svg>
+  );
+}
+
+// ── Signal / Señal Online ──
+export function SignalIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2.5}
+      strokeLinecap="round"
+    >
+      <Line x1="6" y1="18" x2="6" y2="15" />
+      <Line x1="10" y1="18" x2="10" y2="11" />
+      <Line x1="14" y1="18" x2="14" y2="7" />
+      <Line x1="18" y1="18" x2="18" y2="3" />
+    </Svg>
+  );
+}
+
+// ── Engranaje / Settings Gear ──
+export function GearIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+      <Circle cx="12" cy="12" r="3" />
+    </Svg>
+  );
+}
+
+// ── Target icon (crosshair) ──
+export function TargetIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Circle cx="12" cy="12" r="10" />
+      <Circle cx="12" cy="12" r="6" />
+      <Circle cx="12" cy="12" r="2" />
+      <Line x1="12" y1="2" x2="12" y2="6" />
+      <Line x1="12" y1="18" x2="12" y2="22" />
+      <Line x1="2" y1="12" x2="6" y2="12" />
+      <Line x1="18" y1="12" x2="22" y2="12" />
+    </Svg>
+  );
+}
+
+// ── Home icon ──
+export function HomeIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <Polyline points="9 22 9 12 15 12 15 22" />
+    </Svg>
+  );
+}
+
+// ── Star icon ──
+export function StarIcon({ size = 24, color = "#f1c40f" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    </Svg>
+  );
+}
+
+// ── Megaphone icon ──
+export function MegaphoneIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M3 11l18-5v12L3 13v-2z" />
+      <Path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+    </Svg>
+  );
+}
+
+// ── Skull icon ──
+export function SkullIcon({ size = 24, color = "#e74c3c" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Circle cx="9" cy="12" r="1" />
+      <Circle cx="15" cy="12" r="1" />
+      <Path d="M8 20v2h8v-2" />
+      <Path d="M12.5 17l-.5-1-.5 1h1z" />
+      <Path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20" />
+    </Svg>
+  );
+}
+
+// ── Fingerprint icon ──
+export function FingerprintIcon({ size = 24, color = "#fff" }: IconProps) {
+  return (
+    <Svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <Path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4" />
+      <Path d="M5 19.5C5.5 18 6 15 6 12c0-.7.12-1.37.34-2" />
+      <Path d="M17.29 21.02c.12-.6.43-2.3.5-3.02" />
+      <Path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" />
+      <Path d="M8.65 22c.21-.66.45-1.32.57-2" />
+      <Path d="M14 13.12c0 2.38 0 6.38-1 8.88" />
+      <Path d="M2 16h.01" />
+      <Path d="M21.8 16c.2-2 .131-5.354 0-6" />
+      <Path d="M9 6.8a6 6 0 0 1 9 5.2c0 .47 0 1.17-.02 2" />
+    </Svg>
+  );
+}

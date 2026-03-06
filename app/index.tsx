@@ -1,27 +1,26 @@
 import {
-  AlienIcon,
-  BookIcon,
-  GamepadIcon,
-  GridIcon,
-  KnifeIcon,
-  ShieldIcon,
-  UsersIcon,
-  ZapIcon,
+    AlienIcon,
+    BookIcon,
+    GamepadIcon,
+    KnifeIcon,
+    ShieldIcon,
+    UsersIcon
 } from "@/components/Icons";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
-  Easing,
-  FadeInDown,
-  FadeInUp,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
-  ZoomIn,
+    Easing,
+    FadeInDown,
+    FadeInUp,
+    useAnimatedStyle,
+    useSharedValue,
+    withDelay,
+    withRepeat,
+    withSequence,
+    withTiming,
+    ZoomIn,
 } from "react-native-reanimated";
 
 const { width, height } = Dimensions.get("window");
@@ -42,6 +41,7 @@ const STARS_MED = Array.from({ length: 12 }, () => ({
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { displayName, signOut } = useAuth();
 
   const floatAnim = useSharedValue(0);
   const glowAnim = useSharedValue(0.1);
@@ -238,6 +238,25 @@ export default function HomeScreen() {
 
       
 
+      {/* User greeting */}
+      {displayName && (
+        <Animated.View
+          entering={FadeInUp.delay(550).duration(400)}
+          style={styles.userGreeting}
+        >
+          <Text style={styles.userGreetingText}>Hola, {displayName}</Text>
+          <Pressable
+            onPress={signOut}
+            style={({ pressed }) => [
+              styles.logoutBtn,
+              pressed && { opacity: 0.6 },
+            ]}
+          >
+            <Text style={styles.logoutBtnText}>Salir</Text>
+          </Pressable>
+        </Animated.View>
+      )}
+
       {/* Botones */}
       <Animated.View
         entering={FadeInUp.delay(650).duration(600)}
@@ -256,6 +275,17 @@ export default function HomeScreen() {
             <Text style={styles.mainBtnText}>JUGAR</Text>
           </Pressable>
         </Animated.View>
+
+        <Pressable
+          onPress={() => router.push("/(online)/join")}
+          style={({ pressed }) => [
+            styles.onlineButton,
+            pressed && styles.btnPressed,
+          ]}
+        >
+          <UsersIcon size={18} color="#2ecc71" />
+          <Text style={styles.onlineBtnText}>JUGAR ONLINE</Text>
+        </Pressable>
 
         <Pressable
           onPress={() => router.push("/rules")}
@@ -616,6 +646,49 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "900",
     letterSpacing: 5,
+  },
+  onlineButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    width: 280,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#0d0e18",
+    borderWidth: 1.5,
+    borderColor: "#2ecc7130",
+    marginTop: 12,
+  },
+  onlineBtnText: {
+    color: "#2ecc71",
+    fontSize: 15,
+    fontWeight: "800",
+    letterSpacing: 3,
+  },
+  userGreeting: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 8,
+  },
+  userGreetingText: {
+    color: "#4a5568",
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  logoutBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: "#ffffff08",
+    borderWidth: 1,
+    borderColor: "#ffffff10",
+  },
+  logoutBtnText: {
+    color: "#e74c3c80",
+    fontSize: 11,
+    fontWeight: "700",
   },
   btnPressed: {
     opacity: 0.8,
