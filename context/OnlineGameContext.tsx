@@ -46,6 +46,7 @@ type OnlineGameContextType = {
     displayName: string,
   ) => Promise<boolean>;
   leaveRoom: () => Promise<void>;
+  disconnectFromRoom: () => void;
   updateRoomSettings: (
     categoryIndex: number,
     discussionTime: number,
@@ -310,6 +311,16 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const disconnectFromRoom = () => {
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+    setRoom(null);
+    setPlayers([]);
+    setMyPlayer(null);
+  };
+
   const updateRoomSettings = async (
     categoryIndex: number,
     discussionTime: number,
@@ -402,6 +413,7 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
         createRoom,
         joinRoom,
         leaveRoom,
+        disconnectFromRoom,
         updateRoomSettings,
         startOnlineGame,
         castOnlineVote,

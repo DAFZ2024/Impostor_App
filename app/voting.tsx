@@ -1,29 +1,28 @@
 import { showAlert } from "@/components/CustomAlert";
 import {
-    AlienIcon,
-    ArrowRightIcon,
-    CheckIcon,
-    EyeIcon,
-    VoteIcon
+  AlienIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  EyeIcon,
+  VoteIcon,
 } from "@/components/Icons";
 import { useGame } from "@/context/GameContext";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 import Animated, {
-    FadeIn,
-    FadeInDown,
-    FadeInUp,
-    SlideInRight,
-    SlideInUp,
-    ZoomIn,
+  FadeIn,
+  FadeInDown,
+  FadeInUp,
+  SlideInRight,
+  ZoomIn
 } from "react-native-reanimated";
 
 const PLAYER_COLORS = [
@@ -235,10 +234,7 @@ export default function VotingScreen() {
         </Animated.View>
 
         {/* Botón listo */}
-        <Animated.View
-          entering={SlideInUp.delay(400).duration(400)}
-          style={styles.bottomSection}
-        >
+        <View style={styles.bottomSection}>
           <Pressable
             onPress={() => {
               setShowVoterScreen(false);
@@ -255,7 +251,7 @@ export default function VotingScreen() {
               <ArrowRightIcon size={16} color="#ffffff80" />
             </View>
           </Pressable>
-        </Animated.View>
+        </View>
       </View>
     );
   }

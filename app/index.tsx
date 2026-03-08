@@ -1,26 +1,26 @@
 import {
-    AlienIcon,
-    BookIcon,
-    GamepadIcon,
-    KnifeIcon,
-    ShieldIcon,
-    UsersIcon
+  AlienIcon,
+  BookIcon,
+  GamepadIcon,
+  KnifeIcon,
+  ShieldIcon,
+  UsersIcon,
 } from "@/components/Icons";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Dimensions, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
-    Easing,
-    FadeInDown,
-    FadeInUp,
-    useAnimatedStyle,
-    useSharedValue,
-    withDelay,
-    withRepeat,
-    withSequence,
-    withTiming,
-    ZoomIn,
+  Easing,
+  FadeInDown,
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
+  ZoomIn,
 } from "react-native-reanimated";
 
 const { width, height } = Dimensions.get("window");
@@ -212,7 +212,7 @@ export default function HomeScreen() {
             <ShieldIcon size={14} color="#2ecc71" />
           </View>
           <Text style={[styles.floatingBadgeLabel, { color: "#2ecc71" }]}>
-            CREW
+            Una pista
           </Text>
         </Animated.View>
         <Animated.View
@@ -231,12 +231,10 @@ export default function HomeScreen() {
             <KnifeIcon size={14} color="#e74c3c" />
           </View>
           <Text style={[styles.floatingBadgeLabel, { color: "#e74c3c" }]}>
-            SUS
+            Sospechoso
           </Text>
         </Animated.View>
       </Animated.View>
-
-      
 
       {/* User greeting */}
       {displayName && (

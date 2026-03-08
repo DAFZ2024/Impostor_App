@@ -1,10 +1,15 @@
 import { showAlert } from "@/components/CustomAlert";
 import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
   ChatIcon,
   CheckCircleIcon,
   ClockIcon,
   HomeIcon,
   KnifeIcon,
+  LightbulbIcon,
+  RotateCcwIcon,
+  RotateCwIcon,
   ShieldIcon,
   SkullIcon,
   StarIcon,
@@ -16,7 +21,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useOnlineGame } from "@/context/OnlineGameContext";
 import { categories } from "@/data/categories";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, {
   FadeInDown,
@@ -184,13 +189,30 @@ function TimerBar({ elapsed, total }: { elapsed: number; total: number }) {
 export default function OnlinePlayScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { room, players, myPlayer, leaveRoom, castOnlineVote, setOnlinePhase } =
-    useOnlineGame();
+  const {
+    room,
+    players,
+    myPlayer,
+    leaveRoom,
+    disconnectFromRoom,
+    castOnlineVote,
+    setOnlinePhase,
+  } = useOnlineGame();
 
   const [timer, setTimer] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isHost = room?.host_id === user?.id;
+
+  // Elegir jugador y dirección aleatorios al montar
+  const { starterPlayer, direction } = useMemo(() => {
+    const idx = Math.floor(Math.random() * players.length);
+    const dir = Math.random() < 0.5 ? "left" : "right";
+    return {
+      starterPlayer: players[idx],
+      direction: dir as "left" | "right",
+    };
+  }, []);
 
   // Timer for discussion phase
   useEffect(() => {
@@ -214,9 +236,15 @@ export default function OnlinePlayScreen() {
     };
   }, [room?.phase]);
 
-  // Navigate back if room is null
+  // Navigate back if room is null (e.g. host deleted room or got kicked)
+  // Only redirect if not in results phase (results handles its own navigation)
+  const roomPhaseRef = useRef(room?.phase);
   useEffect(() => {
-    if (!room) {
+    roomPhaseRef.current = room?.phase;
+  }, [room?.phase]);
+
+  useEffect(() => {
+    if (!room && roomPhaseRef.current !== "results") {
       router.replace("/");
     }
   }, [room]);
@@ -256,8 +284,8 @@ export default function OnlinePlayScreen() {
     await castOnlineVote(targetUserId);
   };
 
-  const handleEndGame = async () => {
-    await leaveRoom();
+  const handleEndGame = () => {
+    disconnectFromRoom();
     router.replace("/");
   };
 
@@ -267,6 +295,10 @@ export default function OnlinePlayScreen() {
   if (room.phase === "roleReveal") {
     const isImpostor = myPlayer.is_impostor;
     const accent = isImpostor ? RED : GREEN;
+
+    // Generar pista para el impostor (misma lógica que el modo local)
+    const firstLetter = room.secret_word.charAt(0).toUpperCase();
+    const impostorHint = `${category.emoji} ${category.name} · Empieza con "${firstLetter}" · ${room.secret_word.length} letras`;
 
     return (
       <View style={s.container}>
@@ -387,6 +419,17 @@ export default function OnlinePlayScreen() {
                     <View style={[s.categoryDot, { backgroundColor: RED }]} />
                     <Text style={s.wordCategory}>{category.name}</Text>
                   </View>
+
+                  {/* Pista para el impostor */}
+                  <View style={s.hintBox}>
+                    <View style={s.hintIconWrap}>
+                      <LightbulbIcon size={16} color={GOLD} />
+                    </View>
+                    <View style={s.hintContent}>
+                      <Text style={s.hintLabel}>PISTA</Text>
+                      <Text style={s.hintText}>{impostorHint}</Text>
+                    </View>
+                  </View>
                 </View>
               )}
             </Animated.View>
@@ -487,9 +530,135 @@ export default function OnlinePlayScreen() {
             </Text>
           </Animated.View>
 
+          {/* Starter + Direction card */}
+          <Animated.View entering={FadeInDown.delay(150).duration(400)}>
+            <View style={s.starterCard}>
+              <View style={s.starterCardAccent} />
+
+              {/* Who starts */}
+              <View style={s.starterSection}>
+                <View style={s.starterLabelWrap}>
+                  <View style={s.starterLabelLine} />
+                  <Text style={s.starterLabel}>COMIENZA</Text>
+                  <View style={s.starterLabelLine} />
+                </View>
+
+                {starterPlayer &&
+                  (() => {
+                    const starterIdx = players.indexOf(starterPlayer);
+                    const starterColor =
+                      PLAYER_COLORS[starterIdx % PLAYER_COLORS.length];
+                    return (
+                      <>
+                        <View
+                          style={[
+                            s.starterAvatarOuter,
+                            { borderColor: starterColor + "30" },
+                          ]}
+                        >
+                          <View
+                            style={[
+                              s.starterAvatarCircle,
+                              {
+                                borderColor: starterColor,
+                                backgroundColor: starterColor + "12",
+                              },
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                s.starterAvatarText,
+                                { color: starterColor },
+                              ]}
+                            >
+                              {starterPlayer.display_name
+                                .charAt(0)
+                                .toUpperCase()}
+                            </Text>
+                          </View>
+                        </View>
+                        <Text style={[s.starterName, { color: starterColor }]}>
+                          {starterPlayer.display_name}
+                        </Text>
+                      </>
+                    );
+                  })()}
+              </View>
+
+              {/* Separator */}
+              <View style={s.starterSeparator}>
+                <View style={s.starterSepLine} />
+                <View style={s.starterSepDot} />
+                <View style={s.starterSepLine} />
+              </View>
+
+              {/* Direction */}
+              <View style={s.starterSection}>
+                <View style={s.starterLabelWrap}>
+                  <View style={s.starterLabelLine} />
+                  <Text style={s.starterLabel}>DIRECCIÓN</Text>
+                  <View style={s.starterLabelLine} />
+                </View>
+
+                {(() => {
+                  const dirColor = direction === "left" ? "#3498db" : GREEN;
+                  return (
+                    <View style={s.directionRow}>
+                      <View
+                        style={[
+                          s.directionIconCircle,
+                          {
+                            backgroundColor: dirColor + "10",
+                            borderColor: dirColor + "30",
+                          },
+                        ]}
+                      >
+                        {direction === "left" ? (
+                          <RotateCcwIcon size={28} color={dirColor} />
+                        ) : (
+                          <RotateCwIcon size={28} color={dirColor} />
+                        )}
+                      </View>
+                      <View style={s.directionInfo}>
+                        <View style={s.directionArrowRow}>
+                          {direction === "left" ? (
+                            <>
+                              <ArrowLeftIcon size={16} color={dirColor} />
+                              <Text
+                                style={[s.directionText, { color: dirColor }]}
+                              >
+                                IZQUIERDA
+                              </Text>
+                              <ArrowLeftIcon size={16} color={dirColor} />
+                            </>
+                          ) : (
+                            <>
+                              <ArrowRightIcon size={16} color={dirColor} />
+                              <Text
+                                style={[s.directionText, { color: dirColor }]}
+                              >
+                                DERECHA
+                              </Text>
+                              <ArrowRightIcon size={16} color={dirColor} />
+                            </>
+                          )}
+                        </View>
+                        <Text style={s.directionHintText}>
+                          {direction === "left"
+                            ? "Sentido antihorario"
+                            : "Sentido horario"}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })()}
+              </View>
+            </View>
+          </Animated.View>
+
           {/* Timer card */}
           <Animated.View
-            entering={FadeInDown.delay(200).duration(400)}
+            entering={FadeInDown.delay(300).duration(400)}
             style={s.timerCard}
           >
             <View style={s.timerTopRow}>
@@ -502,7 +671,7 @@ export default function OnlinePlayScreen() {
           </Animated.View>
 
           {/* Discussion info card */}
-          <Animated.View entering={FadeInDown.delay(350).duration(400)}>
+          <Animated.View entering={FadeInDown.delay(450).duration(400)}>
             <View style={s.infoCard}>
               <Text style={s.infoCardText}>
                 Debatan entre ustedes para encontrar al impostor.{"\n"}
@@ -512,7 +681,7 @@ export default function OnlinePlayScreen() {
           </Animated.View>
 
           {/* Role reminder */}
-          <Animated.View entering={SlideInRight.delay(500).duration(400)}>
+          <Animated.View entering={SlideInRight.delay(600).duration(400)}>
             <View
               style={[
                 s.roleReminder,
@@ -553,7 +722,7 @@ export default function OnlinePlayScreen() {
           {/* Host skip button */}
           {isHost && (
             <Animated.View
-              entering={FadeInUp.delay(600).duration(400)}
+              entering={FadeInUp.delay(700).duration(400)}
               style={{ marginTop: 24 }}
             >
               <Pressable
@@ -1374,5 +1543,166 @@ const s = StyleSheet.create({
     fontWeight: "900",
     width: 24,
     textAlign: "right",
+  },
+
+  // ── Starter + Direction card ──
+  starterCard: {
+    width: "100%",
+    backgroundColor: CARD,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: CARD_BORDER,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
+    marginBottom: 16,
+    overflow: "hidden",
+    position: "relative",
+  },
+  starterCardAccent: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 3,
+    backgroundColor: CYAN,
+    opacity: 0.5,
+  },
+  starterSection: {
+    alignItems: "center",
+  },
+  starterLabelWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 14,
+  },
+  starterLabelLine: {
+    width: 20,
+    height: 1,
+    backgroundColor: "#ffffff0a",
+  },
+  starterLabel: {
+    color: MUTED,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 3,
+  },
+  starterAvatarOuter: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 1.5,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  starterAvatarCircle: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    borderWidth: 2.5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  starterAvatarText: {
+    fontSize: 24,
+    fontWeight: "900",
+  },
+  starterName: {
+    fontSize: 20,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  starterSeparator: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginVertical: 16,
+    paddingHorizontal: 20,
+  },
+  starterSepLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#ffffff06",
+  },
+  starterSepDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: "#ffffff10",
+  },
+  directionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    width: "100%",
+  },
+  directionIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  directionInfo: {
+    flex: 1,
+    alignItems: "center",
+  },
+  directionArrowRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  directionText: {
+    fontSize: 18,
+    fontWeight: "900",
+    letterSpacing: 4,
+  },
+  directionHintText: {
+    color: MUTED,
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+
+  // ── Pista del impostor ──
+  hintBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    backgroundColor: `${GOLD}08`,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: `${GOLD}18`,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 8,
+    width: "100%",
+  },
+  hintIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 9,
+    backgroundColor: `${GOLD}10`,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 1,
+  },
+  hintContent: {
+    flex: 1,
+  },
+  hintLabel: {
+    color: `${GOLD}80`,
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 2,
+    marginBottom: 3,
+  },
+  hintText: {
+    color: GOLD,
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 18,
   },
 });
